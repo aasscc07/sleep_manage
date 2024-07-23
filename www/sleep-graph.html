@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수면 그래프</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            background-color: white;
+            position: relative;
+        }
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .home-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .content {
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <a href="index.html" class="home-button">홈</a>
+    <div class="content">
+        <h1 class="header">수면 그래프</h1>
+        <div class="row">
+            <div class="chart-container">
+                <canvas id="week1Chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="week2Chart"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="chart-container">
+                <canvas id="week3Chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadTimes() {
+            const times = localStorage.getItem('sleepTimes');
+            return times ? JSON.parse(times) : [];
+        }
+
+        function getLastNWeeksData(n) {
+            const times = loadTimes();
+            const lastNWeeksData = times.slice(-n * 7); // 마지막 N주의 데이터만 가져옴
+            const weeks = [];
+
+            for (let i = 0; i < n; i++) {
+                weeks.push(lastNWeeksData.slice(i * 7, (i + 1) * 7));
+            }
+
+            return weeks;
+        }
+
+        function createChart(ctx, data, label) {
+            const dates = data.map(entry => entry.date);
+            const morningTimes = data.map(entry => {
+                const [hours, minutes] = entry.morningTime.split(':');
+                return parseInt(hours) + parseInt(minutes) / 60;
+            });
+            const eveningTimes = data.map(entry => {
+                const [hours, minutes] = entry.eveningTime.split(':');
+                return parseInt(hours) + parseInt(minutes) / 60;
+            });
+
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: '아침 시간',
+                            data: morningTimes,
+                            borderColor: 'blue',
+                            fill: false
+                        },
+                        {
+                            label: '저녁 시간',
+                            data: eveningTimes,
+                            borderColor: 'red',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 24,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        window.onload = function() {
+            const weeksData = getLastNWeeksData(3);
+            const ctx1 = document.getElementById('week1Chart').getContext('2d');
+            const ctx2 = document.getElementById('week2Chart').getContext('2d');
+            const ctx3 = document.getElementById('week3Chart').getContext('2d');
+
+            createChart(ctx1, weeksData[0] || [], '첫째 주 수면 상태');
+            createChart(ctx2, weeksData[1] || [], '둘째 주 수면 상태');
+            createChart(ctx3, weeksData[2] || [], '셋째 주 수면 상태');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수면 일지 작성</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f8f8;
+            position: relative;
+        }
+        .header {
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .home-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .entry-form {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .entry-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .entry-form textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            resize: none;
+        }
+        .entry-form button {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .entry-form button:hover {
+            background-color: #45a049;
+        }
+        .entries {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .entry {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .entry:last-child {
+            border-bottom: none;
+        }
+        .entry-date {
+            font-weight: bold;
+        }
+        .entry-content {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-button">홈</a>
+    <div class="header">수면 일지 작성</div>
+    <div class="entry-form">
+        <label for="sleep-date">날짜:</label>
+        <input type="date" id="sleep-date">
+        <label for="sleep-entry">수면 일지:</label>
+        <textarea id="sleep-entry" placeholder="일찍 잔 날: 잘한 점 / 늦게 잔 날: 잘못한 점을 기록하세요"></textarea>
+        <button onclick="addEntry()">기록 추가</button>
+    </div>
+    <div class="entries" id="entries">
+        <!-- 여기에 수면 일지가 추가됩니다 -->
+    </div>
+
+    <script>
+        function addEntry() {
+            const date = document.getElementById('sleep-date').value;
+            const content = document.getElementById('sleep-entry').value;
+
+            if (date && content) {
+                const entry = { date, content };
+                const entries = getEntries();
+                entries.push(entry);
+                localStorage.setItem('sleepEntries', JSON.stringify(entries));
+                displayEntries();
+
+                // Clear the form fields
+                document.getElementById('sleep-date').value = '';
+                document.getElementById('sleep-entry').value = '';
+            } else {
+                alert('날짜와 수면 일지를 입력하세요.');
+            }
+        }
+
+        function getEntries() {
+            const entries = localStorage.getItem('sleepEntries');
+            return entries ? JSON.parse(entries) : [];
+        }
+
+        function displayEntries() {
+            const entries = getEntries();
+            const entriesContainer = document.getElementById('entries');
+            entriesContainer.innerHTML = '';
+
+            entries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry';
+
+                const entryDate = document.createElement('div');
+                entryDate.className = 'entry-date';
+                entryDate.textContent = entry.date;
+
+                const entryContent = document.createElement('div');
+                entryContent.className = 'entry-content';
+                entryContent.textContent = entry.content;
+
+                entryDiv.appendChild(entryDate);
+                entryDiv.appendChild(entryContent);
+
+                entriesContainer.appendChild(entryDiv);
+            });
+        }
+
+        window.onload = function() {
+            displayEntries();
+        };
+    </script>
+</body>
+</html>

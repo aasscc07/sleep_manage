@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수면 시간 설정</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f8f8;
+            position: relative;
+        }
+        .header {
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .home-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .entry-form {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .entry-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .entry-form input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .entry-form button {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .entry-form button:hover {
+            background-color: #45a049;
+        }
+        .recorded-times {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .time-entry {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-button">홈</a>
+    <div class="header">수면 시간 설정</div>
+    <div class="entry-form">
+        <label for="date">날짜:</label>
+        <input type="date" id="date">
+        <label for="morning-time">아침에 일어나는 시간:</label>
+        <input type="time" id="morning-time">
+        <label for="evening-time">저녁에 잠드는 시간:</label>
+        <input type="time" id="evening-time">
+        <button onclick="saveTimes()">저장</button>
+    </div>
+
+    <div class="recorded-times" id="recorded-times">
+        <!-- 저장된 수면 시간이 여기에 표시됩니다 -->
+    </div>
+
+    <script src="common.js"></script>
+    <script>
+        document.addEventListener('deviceready', function() {
+            console.log('Device is ready');
+            requestNotificationPermission();
+            setDefaultDate();
+            loadTimes();
+        }, false);
+
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+        }
+
+        function saveTimes() {
+            const date = document.getElementById('date').value;
+            const morningTime = document.getElementById('morning-time').value;
+            const eveningTime = document.getElementById('evening-time').value;
+
+            console.log("Save button clicked");
+            console.log("Date: ", date);
+            console.log("Morning Time: ", morningTime);
+            console.log("Evening Time: ", eveningTime);
+
+            if (date && morningTime && eveningTime) {
+                try {
+                    const times = getStoredTimes();
+
+                    if (times.length >= 21) {
+                        times.shift(); // 오래된 데이터 삭제
+                    }
+
+                    times.push({ date, morningTime, eveningTime });
+                    localStorage.setItem('sleepTimes', JSON.stringify(times));
+                    console.log("Times saved to localStorage");
+
+                    displayStoredTimes();
+                    scheduleNotifications(morningTime, eveningTime);
+                    alert('수면 시간이 저장되었습니다.');
+                } catch (e) {
+                    console.error("Error saving times to localStorage", e);
+                    alert('시간 저장에 실패했습니다.');
+                }
+            } else {
+                alert('날짜, 아침 시간, 저녁 시간을 모두 입력하세요.');
+            }
+        }
+
+        function loadTimes() {
+            displayStoredTimes();
+        }
+
+        function getStoredTimes() {
+            const times = localStorage.getItem('sleepTimes');
+            return times ? JSON.parse(times) : [];
+        }
+
+        function displayStoredTimes() {
+            const times = getStoredTimes();
+            const timesContainer = document.getElementById('recorded-times');
+            timesContainer.innerHTML = '';
+
+            times.forEach(time => {
+                const timeEntry = document.createElement('div');
+                timeEntry.className = 'time-entry';
+                timeEntry.textContent = `날짜: ${time.date} - 아침 시간: ${time.morningTime}, 저녁 시간: ${time.eveningTime}`;
+                timesContainer.appendChild(timeEntry);
+            });
+        }
+
+        function requestNotificationPermission() {
+            console.log("Requesting notification permission");
+            cordova.plugins.notification.local.requestPermission(function (granted) {
+                console.log('Notification permission has been granted: ' + granted);
+            });
+        }
+
+        function scheduleNotifications(morningTime, eveningTime) {
+            console.log("Scheduling notifications");
+            console.log("Morning Time: ", morningTime);
+            console.log("Evening Time: ", eveningTime);
+
+            scheduleNotification(morningTime, '아침에 일어날 시간입니다.');
+            scheduleNotification(eveningTime, '지금은 잠자리에 들 시간입니다.');
+        }
+
+        function scheduleNotification(time, message) {
+            const [hours, minutes] = time.split(':');
+            const notificationTime = new Date();
+            notificationTime.setHours(hours);
+            notificationTime.setMinutes(minutes);
+            notificationTime.setSeconds(0);
+
+            const now = new Date();
+            if (notificationTime < now) {
+                notificationTime.setDate(notificationTime.getDate() + 1);
+            }
+
+            console.log("Notification scheduled for: ", notificationTime, " with message: ", message);
+
+            if (cordova && cordova.plugins && cordova.plugins.notification && cordova.plugins.notification.local) {
+                cordova.plugins.notification.local.schedule({
+                    title: '수면 알림',
+                    text: message,
+                    trigger: { at: notificationTime },
+                    foreground: true
+                });
+                console.log("Notification scheduled successfully");
+            } else {
+                console.error("Local Notification plugin not available");
+            }
+        }
+    </script>
+</body>
+</html>

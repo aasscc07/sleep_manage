@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+    <head>
+        <link rel="manifest" href="manifest.json">
+        <script>
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js')
+                .then(function(registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, function(error) {
+                console.log('ServiceWorker registration failed: ', error);
+                });
+            }
+        </script>
+
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>메인 페이지</title>
+        <style>
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background-color: #f0f0f0;
+                font-family: "Arial", sans-serif;
+                position: relative;
+            }
+            .phone-shape {
+                width: 400px;
+                height: 800px;
+                background: linear-gradient(to bottom right, #e6e6e6, #ffffff);
+                border-radius: 40px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .notch {
+                width: 60px;
+                height: 30px;
+                background: #000;
+                border-radius: 20px 20px 0 0;
+                position: absolute;
+                top: 10px;
+                left: calc(50% - 30px);
+            }
+            .screen {
+                width: 100%;
+                height: 100%;
+                background: #f8f8f8;
+                position: absolute;
+                top: 40px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+            .header {
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                color: #333;
+            }
+            .button {
+                padding: 15px 30px;
+                border: none;
+                border-radius: 10px;
+                background-color: #4caf50;
+                color: white;
+                font-size: 18px;
+                cursor: pointer;
+                text-align: center;
+                text-decoration: none;
+                margin: 10px;
+                transition: background-color 0.3s ease;
+                width: 200px;
+            }
+            .button:hover {
+                background-color: #45a049;
+            }
+            .advice-bar {
+                width: 100%;
+                background-color: #333;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                border-radius: 0 0 40px 40px;
+                font-size: 16px;
+                position: absolute;
+                bottom: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="phone-shape">
+            <!-- <div class="notch"></div> -->
+            <div class="screen">
+                <div class="header">수면 관리 프로그램</div>
+                <a href="sleep-graph.html" class="button">수면 그래프</a>
+                <a href="sleep-diary.html" class="button">수면 일지 작성</a>
+                <a href="sleep-record.html" class="button">수면 기록</a>
+                <a href="sleep-time-settings.html" class="button"
+                    >수면 시간 설정</a
+                >
+            </div>
+            <div class="advice-bar" id="adviceBar"></div>
+
+        </div>
+        <audio id="alarmSound" src="alarm-sound.mp3" preload="auto"></audio>
+        <script src="common.js"></script>
+    
+        <script>
+            const advices = [
+                "규칙적인 수면 시간을 유지하세요.",
+                "카페인을 피하세요.",
+                "잠자기 전에 스마트폰 사용을 자제하세요.",
+                "편안한 수면 환경을 만드세요.",
+                "규칙적인 운동을 하세요.",
+                "늦은 저녁에 무거운 식사를 피하세요.",
+                "자기 전에 스트레칭을 하세요.",
+                "낮잠을 짧게 즐기세요.",
+                "자기 전 따뜻한 목욕을 해보세요.",
+                "침대는 잠자는 용도로만 사용하세요.",
+            ];
+
+            let currentAdviceIndex = 0;
+
+            function showAdvice() {
+                const adviceBar = document.getElementById("adviceBar");
+                adviceBar.textContent = advices[currentAdviceIndex];
+                currentAdviceIndex = (currentAdviceIndex + 1) % advices.length;
+            }
+
+            setInterval(showAdvice, 10000); // 10초마다 조언 변경
+            window.onload = showAdvice; // 페이지 로드 시 첫 조언 표시
+        </script>
+    </body>
+</html>

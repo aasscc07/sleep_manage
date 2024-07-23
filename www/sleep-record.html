@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수면 기록</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f8f8;
+            position: relative;
+        }
+        .header {
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .home-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .entry-form {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .entry-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .entry-form input,
+        .entry-form textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .entry-form button {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .entry-form button:hover {
+            background-color: #45a049;
+        }
+        .entries {
+            width: 80%;
+            max-width: 600px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .entry {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .entry:last-child {
+            border-bottom: none;
+        }
+        .entry-date {
+            font-weight: bold;
+        }
+        .entry-content {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-button">홈</a>
+    <div class="header">수면 기록</div>
+    <div class="entry-form">
+        <label for="sleep-date">날짜:</label>
+        <input type="date" id="sleep-date">
+        <label for="morning-time">아침에 일어난 시간:</label>
+        <input type="time" id="morning-time">
+        <label for="evening-time">저녁에 잠든 시간:</label>
+        <input type="time" id="evening-time">
+        <label for="notes">메모:</label>
+        <textarea id="notes" placeholder="특이사항을 기록하세요"></textarea>
+        <button onclick="addEntry()">기록 추가</button>
+    </div>
+    <div class="entries" id="entries">
+        <!-- 여기에 수면 기록이 추가됩니다 -->
+    </div>
+
+    <script>
+        function addEntry() {
+            const date = document.getElementById('sleep-date').value;
+            const morningTime = document.getElementById('morning-time').value;
+            const eveningTime = document.getElementById('evening-time').value;
+            const notes = document.getElementById('notes').value;
+
+            if (date && morningTime && eveningTime) {
+                const entry = { date, morningTime, eveningTime, notes };
+                const entries = getEntries();
+                entries.push(entry);
+                localStorage.setItem('sleepRecords', JSON.stringify(entries));
+                displayEntries();
+
+                // Clear the form fields
+                document.getElementById('sleep-date').value = '';
+                document.getElementById('morning-time').value = '';
+                document.getElementById('evening-time').value = '';
+                document.getElementById('notes').value = '';
+            } else {
+                alert('날짜, 아침 시간, 저녁 시간을 입력하세요.');
+            }
+        }
+
+        function getEntries() {
+            const entries = localStorage.getItem('sleepRecords');
+            return entries ? JSON.parse(entries) : [];
+        }
+
+        function displayEntries() {
+            const entries = getEntries();
+            const entriesContainer = document.getElementById('entries');
+            entriesContainer.innerHTML = '';
+
+            entries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry';
+
+                const entryDate = document.createElement('div');
+                entryDate.className = 'entry-date';
+                entryDate.textContent = entry.date;
+
+                const entryContent = document.createElement('div');
+                entryContent.className = 'entry-content';
+                entryContent.innerHTML = `
+                    <div>아침에 일어난 시간: ${entry.morningTime}</div>
+                    <div>저녁에 잠든 시간: ${entry.eveningTime}</div>
+                    <div>메모: ${entry.notes}</div>
+                `;
+
+                entryDiv.appendChild(entryDate);
+                entryDiv.appendChild(entryContent);
+
+                entriesContainer.appendChild(entryDiv);
+            });
+        }
+
+        window.onload = function() {
+            displayEntries();
+        };
+    </script>
+</body>
+</html>
